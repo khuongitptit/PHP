@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Quản lý khách hàng</title>
+		<link rel="icon" href="./assets/images/khuong.jpg" />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round" />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+		<link rel="stylesheet" href="./assets/fontawesome-free-5.15.1-web/css/all.css" />
+
+		<script src="./assets/jquery/jquery-3.5.1.js"></script>
+		<script src="./assets/b4/js/popper.min.js"></script>
+		<script src="./assets/b4/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="./assets/b4/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="./src/css/admin.css" />
+		<link
+			rel="stylesheet prefetch"
+			href="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css"
+		/>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+		<script>
+			$(document).ready(function () {
+				$('[data-toggle="tooltip"]').tooltip();
+			});
+			// $('[data-toggle="popover"]').popover({
+			// 	html: true,
+			// 	trigger: 'click',
+			// 	placement: 'top',
+			// 	content: function () {
+			// 		return '<p class="btn btn-danger">Xóa khách hàng này</p>';
+			// 	},
+			// });
+			//preview avatar
+			const previewFile = input => {
+				var file = $("input[name=avatarUpload]").get(0).files[0];
+				if(file){
+					let reader = new FileReader();
+					reader.onload = function(){
+            $("#previewImg").attr("src", reader.result);
+          }
+					reader.readAsDataURL(file);
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="addCustomerModal" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title customer" >Thêm mới khách hàng</h4>
+					</div>
+					<div class="modal-body">
+						<form>
+							<div class="form-group">
+								<label for="name">Họ tên</label>
+								<input type="text" class="form-control customer" id="name" />
+							</div>
+							<div class="form-group">
+								<label for="avatarUpload">Ảnh đại diện</label>
+								<input type="file" name="avatarUpload" onchange="previewFile(this);" required>
+								<img class="customer" id="previewImg" src="./assets/img/defaultAvatar.jpg" alt="Avatar">
+							</div>
+							<div class="form-group">
+								<label for="dob">Ngày sinh</label>
+								<div class="datepicker input-group date" data-date-format="dd-mm-yyyy">
+									<input id="dob" class="form-control customer" readonly="" type="text" />
+									<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="gender">Giới tính</label></br>
+								<label class="radio-inline"><input id="male" type="radio" name="gender" value="1" /> Nam</label>
+								<label class="radio-inline"><input id="female" type="radio" name="gender" value="2" /> Nữ</label>
+							</div>
+							<div class="form-group">
+								<label for="address">Địa chỉ</label>
+								<input type="text" class="form-control customer" id="address" />
+							</div>
+							<div class="form-group">
+								<label for="phone">Điện thoại</label>
+								<input type="text" class="form-control customer" id="phone" />
+							</div>
+							<div class="form-group">
+								<label for="email">Email</label>
+								<input type="email" class="form-control customer" id="email" />
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer customer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+						<button type="button" id="btn-add-customer" class="btn btn-success" data-dismiss="modal">Thêm</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="deleteModal" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Xóa khách hàng</h4>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+						<button type="button" id="btnConfirmDelete" class="btn btn-danger" data-dismiss="modal">Xóa</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="commentModal" class="modal fade" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title comment">Bình luận của khách hàng</h4>
+					</div>
+					<div class="modal-body">
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Thời gian</th>
+									<th>Nội dung</th>
+								</tr>
+							</thead>
+							<tbody id="comment-table-body"></tbody>
+						</table>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<nav class="navbar navbar-expand-lg">
+			<a class="navbar-brand" href="#">Trang chủ</a>
+			<button
+				class="navbar-toggler"
+				id="dropdown-btn"
+				type="button"
+				data-toggle="collapse"
+				data-target="#navbar_dropdown"
+				aria-controls="navbarSupportedContent"
+				aria-expanded="false"
+				aria-label="Toggle navigation"
+			>
+				<span class="material-icons">list</span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="navbar_dropdown">
+				<ul class="navbar-nav mr-auto">
+					<form class="form-inline">
+						<input
+							class="form-control mr-sm-2"
+							id="search-term"
+							type="search"
+							placeholder="Nhập tên khách hàng"
+							aria-label="Search"
+						/>
+						<button type="button" class="btn btn-outline-info" id="search-btn">
+							<span class="material-icons" id="icon-search">search</span>Tìm
+						</button>
+					</form>
+				</ul>
+				<button id="btn-trigger-add-customer" class="btn btn-secondary mr-auto" type="button" data-toggle="modal" data-target="#addCustomerModal">
+					Thêm mới&nbsp;&nbsp;<i class="fas fa-user-plus"></i>
+				</button>
+				<button id="btn-sign-out" class="btn btn-danger ml-auto" type="button">
+					Đăng xuất&nbsp;&nbsp;<i class="fas fa-sign-out-alt"></i>
+				</button>
+			</div>
+		</nav>
+		<div class="container-xl">
+			<div class="table-responsive">
+				<div class="table-wrapper">
+					<div class="table-title">
+						<div class="row">
+							<div class="col-sm-5">
+								<h2 id="customer-table-status">Tất cả <b>khách hàng</b></h2>
+							</div>
+						</div>
+					</div>
+					<table class="table table-striped table-hover">
+						<thead>
+							<tr>
+								<th>Họ tên</th>
+								<th>Ảnh đại diện</th>
+								<th>Ngày sinh</th>
+								<th>Giới tính</th>
+								<th>Địa chỉ</th>
+								<th>Điện thoại</th>
+								<th>Email</th>
+								<th>Hành động</th>
+							</tr>
+						</thead>
+						<tbody id="customer-table-body"></tbody>
+					</table>
+					<div class="clearfix">
+						<!-- <div class="hint-text">Hiển thị <b>10</b> trong tổng số <b>25</b> khách hàng</div> -->
+						<ul class="pagination d-flex justify-content-center">
+							<li class="page-item">
+								<a href="#" class="page-link"><i class="fas fa-arrow-circle-left"></i></a>
+							</li>
+							<li class="page-item active"><a href="#" class="page-link">1</a></li>
+							<li class="page-item"><a href="#" class="page-link">2</a></li>
+							<li class="page-item"><a href="#" class="page-link">3</a></li>
+							<li class="page-item"><a href="#" class="page-link">4</a></li>
+							<li class="page-item"><a href="#" class="page-link">5</a></li>
+							<li class="page-item">
+								<a href="#" class="page-link"><i class="fas fa-arrow-circle-right"></i></a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/8.1.2/firebase-app.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/8.1.2/firebase-storage.js"></script>
+		<script src="./src/js/customer.js"></script>
+		<script>			
+			$(document).ready(() => {
+				//check authentication
+				const userData = localStorage.getItem("userData");
+				if(_.isEmpty(userData)){
+					location.replace("/index.html");
+				}
+				//date picker
+				$(function () {
+					$('.datepicker')
+						.datepicker({
+							autoclose: true,
+							format: 'yyyy-mm-dd',
+							todayHighlight: true,
+						})
+						.datepicker('update', new Date());
+				});
+				//get all
+				getAll();
+				//search
+				$('#search-btn').on('click', () => {
+					const searchTerm = $('#search-term').val();									
+					$.ajax({
+						type: 'GET',
+						url: `src/php/customer.php`,
+						data: { 
+							action:'GET_BY_NAME',
+							keyword: searchTerm 
+						},
+						success: res => {
+							console.log("resaaa",JSON.parse(res))
+							$("#customer-table-status").html(`Kết quả tìm kiếm với từ khóa <b>${searchTerm}</b>`);	
+							renderCustomer(res);
+						},
+						error: err => {
+							console.log('err', err);
+						},
+					});
+				});
+				//add
+				$("#btn-trigger-add-customer").on("click",()=>{
+					$(".modal-title.customer").html("Thêm mới khách hàng");
+					$("#name.customer").val('');
+					$("#previewImg.customer").attr("src","./assets/img/defaultAvatar.jpg");
+					$("#dob.customer").val("");
+					$("#male").prop("checked",false);
+					$("#female").prop("checked",false);
+					$("#address.customer").val("");
+					$("#phone.customer").val("");
+					$("#email.customer").val("");
+					$(".modal-footer.customer").empty();
+					const btnCancel = $(`<button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>`);
+					const btnAdd = $(`<button type="button" id="btn-add-customer" class="btn btn-success" data-dismiss="modal">Thêm</button>`);
+					$(".modal-footer.customer").append(btnCancel,btnAdd);
+					btnAdd.on('click', postCustomer);
+				})
+				
+				//delete
+				$(document).on('click', '.deleteBtn', function(){
+					const deleteBtn = $(this);
+					const customerId = deleteBtn.attr('customerId');
+					$('#btnConfirmDelete').on('click',()=>{
+						deleteCustomer(customerId);
+						$("#deleteModal").hide()
+					})
+				});
+				//edit
+				$(document).on('click', '.editBtn', function(){
+					const editBtn = $(this);
+					const customerId = editBtn.attr('customerId');
+					$.ajax({
+						type: 'GET',
+						url: `src/php/customer.php`,
+						data: { 
+							action:'GET_BY_ID',
+							customerId 
+						},
+						success: res => {
+							const editingCustomer = _.head(JSON.parse(res));
+							console.log("data", editingCustomer);
+							const {id, name, avatarURL, dob, gender, address, phone, email} = editingCustomer;
+							$(".modal-title.customer").html("Cập nhật khách hàng");
+							$("#name.customer").val(name);
+							$("#previewImg.customer").attr("src",avatarURL);
+							$("#dob.customer").val(dob);
+							if(gender == 1){
+								$("#male").prop("checked",true);
+							}else {
+								$("#female").prop("checked",true);
+							}
+							$("#address.customer").val(address);
+							$("#phone.customer").val(phone);
+							$("#email.customer").val(email);
+							$(".modal-footer.customer").empty();
+							const btnCancel = $(`<button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>`);
+							const btnEdit = $(`<button type="button" id="btn-edit-customer" class="btn btn-success" data-dismiss="modal">Cập nhật</button>`);
+							$(".modal-footer.customer").append(btnCancel,btnEdit);
+							btnEdit.on('click', ()=>{
+								editCustomer(customerId,avatarURL);
+								$("#addCustomerModal").hide();
+							});
+						},
+						error: err => {
+							console.log('err', err);
+						},
+					});
+				});
+				$(document).on("click",".viewCommentBtn",function(){
+					const viewCommentBtn = $(this);
+					const customerId = viewCommentBtn.attr('customerId');
+					$.ajax({
+						type: 'GET',
+						url: `src/php/comment.php`,
+						data: { 
+							action:'GET_BY_CUSTOMER_ID',
+							customerId 
+						},
+						success: res => {
+							const commentData = JSON.parse(res);
+							const customerName = _.head(commentData).name;
+							console.log("name",customerName)
+							const commentTable = $("#comment-table-body");
+							$(".modal-title.comment").html(`Bình luận của khách hàng: ${customerName}`).css("font-size","20px");
+							commentData.map(item => {
+								console.log("item",item)
+								let commentItem = $(`
+									<tr>
+										<td>${item.time}</td>
+										<td>${item.comment}</td>
+									</tr>
+								`);
+								commentTable.append(commentItem);
+							})
+						},
+						error: err => {
+							console.log('err', err);
+						},
+					});
+				});
+				$("#btn-sign-out").on("click",()=>{
+					localStorage.removeItem("userData");
+					location.replace('/index.html');
+					
+				})
+    });
+		</script>
+	</body>
+</html>
